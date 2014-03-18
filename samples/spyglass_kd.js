@@ -90,7 +90,6 @@ require([
       var f = features[len][0];
       var pt = new Point(f);
       highlightLayer.add(new Graphic(pt, null, f));
-      console.log(inBuffer.length + " features in buffer");
       var stats = calcStats(features);
       dom.byId("messages").innerHTML = string.substitute(infoString, stats);
       /*console.log("feature stats %o", stats);*/
