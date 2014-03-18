@@ -49,7 +49,7 @@ require([
     //now that we have gotten all of the features, switch to snapshot mode, so we don't attempt to download or server query for more.
     ptsLayer._isSnapshot = true;
     ptsLayer.mode = FeatureLayer.MODE_SNAPSHOT;
-    map.setLevel(12);
+    //map.setLevel(12);
     
     Underlay.hide();
     dom.byId('step1').hidden=true;
