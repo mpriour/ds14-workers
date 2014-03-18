@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
     <title>Map and Layer</title>
-    <link rel="stylesheet" href="/jsapi/src/js/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.9/js/esri/css/esri.css">
     <style>
       html, body, #map {
         height: 100%;
@@ -22,16 +22,7 @@
         border-radius: 0 0 0 10px;
       }
     </style>
-    <script>
-        dojoConfig = {
-            //forceGfxRenderer: "canvas",
-            paths: {
-                esri: "../../esri",
-                local: location.pathname.split('/').slice(0,-1).join('/')
-            }
-        };
-    </script>
-    <script src="/jsapi/src/js/dojo/dojo/dojo.js"></script>
+    <script src="http://js.arcgis.com/3.9"></script>
 </head>
 <body>
     <div id="map"></div>
