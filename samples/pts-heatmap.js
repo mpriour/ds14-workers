@@ -1,21 +1,18 @@
-var map, indexer, ptsLayer, maxPtsPxl, maxPoints, pxStep, buffer, wtFormula, ramp;
-require(["esri/map", "esri/layers/FeatureLayer", "esri/process/Index", "esri/layers/GraphicsLayer", "esri/symbols/SimpleMarkerSymbol",
+var map, indexer, ptsLayer, maxPtsPxl, pxStep, buffer, wtFormula, ramp, rampColors;
+require(["esri/map", "esri/layers/FeatureLayer", "esri/layers/MapImage", "esri/layers/MapImageLayer", "esri/symbols/SimpleMarkerSymbol",
         "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/graphic", "esri/geometry/Point",
         "dojo/_base/lang", "dojo/_base/array", "dojo/on", "dojo/Deferred", "dojo/_base/Color", "dojo/promise/all", "dojo/dom-construct"
     ],
-function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRenderer, PictureMarkerSymbol, Graphic, Point,
+function(Map, FeatureLayer, MapImage, MapImageLayer, SimpleMarkerSymbol, SimpleRenderer, PictureMarkerSymbol, Graphic, Point,
          lang, array, on, Deferred, Color, all, domConstruct) {
     map = new Map("map", {
         basemap: "gray",
         center: [-85, 36],
         zoom: 6
     });
-    indexer = new Index({
-        //drawFeatures: false,
-        passFeatures: false
-    });
-
-    pxStep = 5;//25;
+    
+    pxStep = 5;
+    // pxStep = 25;
     buffer = 10;
     wtFormula = 'shepard';
     maxPtsPxl = 0.05;
@@ -26,15 +23,20 @@ function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRend
         "http://tmservices1.esri.com/arcgis/rest/services/LiveFeeds/StreamGauge/MapServer/0", {
             mode: FeatureLayer.MODE_ONDEMAND,
             outFields: ["*"],
-            autoGeneralize: false,
-            processors: [indexer]
+            plugins: [{
+                id: 'esri/plugins/spatialIndex',
+                options: {
+                    drawFeatures: false,
+                    passFeatures: false
+                }
+            }]
         });
 
     var latice,
         canvas,
-        pmCache = {},
-        workerClient = indexer.workerClient;
-    var heatTiles = new GraphicsLayer({
+        workerClient,
+        pmCache = {};
+    var heatTiles = new MapImageLayer({
         id: 'heatmap',
         visible: false
     });
@@ -46,11 +48,17 @@ function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRend
     ramp = rampColors.Spectral;
     ptsLayer.on('load', function() {
         ptsLayer.minScale = Infinity;
-        ptsLayer.setRenderer(new SimpleRenderer(new SimpleMarkerSymbol().setSize(6).setOutline(null).setColor(new Color("black"))));
-        workerClient.importScripts('local/heatmapWorker');
+        ptsLayer.setRenderer(new SimpleRenderer(new SimpleMarkerSymbol().setSize(4).setOutline(null).setColor(new Color([16,16,16,0.5]))));
         on.once(ptsLayer, 'update-start', function() {
             latice = ptsLayer._mode._gridLayer;
         });
+    });
+    ptsLayer.on('plugin-add', function(evt) {
+        if (evt.id.indexOf('spatialIndex')>1) {
+            indexer = ptsLayer.spatialIndex;
+            workerClient = indexer.workerClient;
+            workerClient.importScripts(['local/heatmapper', 'local/heatmapWorker']);
+        }
     });
 
     /*map.on('zoom-end', function(evt){
@@ -58,20 +66,20 @@ function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRend
         maxPtsPxl*=multiple;
     });*/
 
-    ptsLayer.on('update-end', function(evt) {
+    ptsLayer.on('process-end', function(evt) {
         var mapExt = map.extent;
         var mapScale = map.getScale();
         var ptCount = ptsLayer.graphics.length;
         var cells = latice.getCellsInExtent(mapExt).cells;
         var imgSz = [latice.cellWidth, latice.cellHeight];
-        var pfs;
         var colorRamp = generateColorPallete(ramp);
         heatTiles.visible || heatTiles.setVisibility(true);
-        heatTiles.clear();
+        heatTiles.removeAllImages();
         while (cells.length) {
             var cell = cells.splice(Math.floor(cells.length / 2), 1)[0];
-            //pfs = getCachedPFS(mapScale, cell);
-            if (!pfs) {
+            var ht;
+           // ht = getCachedTile(cell);
+            if (!ht) {
                 workerClient.postMessage({
                     action: 'calculateWeights',
                     extent: cell.extent,
@@ -86,26 +94,28 @@ function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRend
                             return;
                         }
                         var imgUrl = generateImageUrl(densities, colorRamp, imgSz[0], imgSz[1]);
-                        pfs = new PictureMarkerSymbol(imgUrl, imgSz[0], imgSz[1]);
+                        ht = new MapImage({
+                            href: imgUrl,
+                            extent: cell.extent
+                        });
                         //console.log(pfs.toJson());
-                        //pfs.setOffset(14,0);
-                        //setCachedPFS(pfs, mapScale, cell);
-                        var gr = new Graphic(cell.extent.getCenter(), pfs);
+                        /*var gr = new Graphic(cell.extent.getCenter(), pfs);
                         var corners = [[cell.extent.xmax,cell.extent.ymax],[cell.extent.xmax,cell.extent.ymin],[cell.extent.xmin,cell.extent.ymin],[cell.extent.xmin,cell.extent.ymax]];
                         while(!(map.extent.contains(gr.geometry)) && corners.length){
                             gr.setGeometry(new Point(corners.shift(),map.spatialReference));
                             var xoff = (corners.length>1) ? -imgSz[0]/2 : imgSz[0]/2;
                             var yoff = (corners.length%3) ? imgSz[1]/2 : -imgSz[1]/2;
                             pfs.setOffset(xoff,yoff);
-                        }
-                        heatTiles.add(gr);
-                        if(!gr.visible){
+                        }*/
+                        //setCachedTile(ht, cell);
+                        heatTiles.addImage(ht);
+                        /*if(!gr.visible){
                             heatTiles._draw(gr, true);
-                        }
+                        }*/
                     };
                 })(cell));
             } else {
-                heatTiles.add(new Graphic(cell.extent/*.getCenter()*/, pfs));
+                heatTiles.addImage(ht);
             }
         }
     });
@@ -167,14 +177,16 @@ function(Map, FeatureLayer, Index, GraphicsLayer, SimpleMarkerSymbol, SimpleRend
         return ctx;
     }
 
-    function getCachedPFS(scale, cell) {
-        return (pmCache[scale]) ? pmCache[scale][cell.r + ':' + cell.c] : false;
+    function getCachedTile(cell) {
+        var res = ~~cell.resolution;
+        return (pmCache[res]) ? pmCache[res][cell.row + ':' + cell.col] : false;
     }
 
-    function setCachedPFS(pfs, scale, cell) {
-        if (!pmCache[scale]) {
-            pmCache[scale] = {};
+    function setCachedTile(tile, cell) {
+        var res = ~~cell.resolution;
+        if (!pmCache[res]) {
+            pmCache[res] = {};
         }
-        pmCache[scale][cell.r + ':' + cell.c] = pfs;
+        pmCache[res][cell.row + ':' + cell.col] = tile;
     }
 });

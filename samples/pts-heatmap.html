@@ -22,6 +22,13 @@
         border-radius: 0 0 0 10px;
       }
     </style>
+    <script>
+      dojoConfig = {
+          paths: {
+              local: location.pathname.split('/').slice(0,-1).join('/')
+          }
+      };
+    </script>
     <script src="http://js.arcgis.com/3.9"></script>
 </head>
 <body>

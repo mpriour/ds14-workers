@@ -12,31 +12,13 @@
 
     var hm = {};
 
-    hm.weightFormulas = {
-        sine: function (ratio) {
-            var wt = Math.sin(ratio * Math.PI / 2); //-1 to 1
-            return (1 + wt) / 2;
-        },
-        shepard: function (ratio) {
-            var wt = Math.pow((1 - (ratio + 2)) / 1 * (ratio + 2), 2); //0 to 36
-            return wt / 36;
-        },
-        inverse: function (ratio) {
-            var wt = 1 / (1 - ratio); //0.5 to Infinity -> clamped at 0 to 5
-            wt = Math.min(5, wt - 0.5);
-            return wt / 5;
-        },
-        linear: function (ratio) {
-            return (ratio + 1) / 2;
-        }
-    };
-
     hm.wtFormulas = {
         //all return values from 0 (nearest calc pt) to 1 (maxd)
         sine: function (d, maxd) {
             var ratio = Math.min(d/maxd, 1); //clamped at 0 to 1
             var wt = Math.cos(ratio * Math.PI); //1 to -1
             return (1 - wt)/2;
+            // (PI*x - sin(PI*x)) / (2*PI) -- integral
         },
         shepard: function (d, maxd) {
             if(d===0){
@@ -45,6 +27,7 @@
             var ratio = Math.max(0, maxd-d)/(maxd*d);
             var wt = ratio*ratio;
             return 1-wt;
+            //2*ln(x)+1/x -- integral
         },
         inverse: function (d, maxd) {
             if(d>maxd){ d = maxd; }
@@ -52,9 +35,11 @@
             var invmax = 1/maxd;
             var ratio = (invd - invmax) / invmax / 100;
             return 1 - Math.min(1,ratio);
+            //2x−ln(x) -- integral
         },
         linear: function (d, maxd) {
             return Math.min(d/maxd, 1);
+            //x^2 / 2 -- integral
         }
     };
 
@@ -99,12 +84,12 @@
                 return prevDistFunc(a.geometry, b.geometry);
             };
         }
-        postMessage({
+        /*postMessage({
             msgId:msgId,
             status: 'debug',
             distFunc: ''+distFunc,
             fullPoints: ptSet
-        });
+        });*/
         //set wtFormula
         if (wtFormula==undefined) { //want to catch undef or null, but not false
             wtFormula = hm.wtFormulas.sine;
