@@ -37,8 +37,8 @@ require([
 
   // selection symbol used to draw the selected census block points within the buffer polygon
   var symbol = new SimpleMarkerSymbol(
-    SimpleMarkerSymbol.STYLE_CIRCLE,
-    4,
+    SimpleMarkerSymbol.STYLE_CIRCLE, 
+    4, 
     null,
     new Color([207, 34, 171, 0.5])
   );
@@ -46,15 +46,18 @@ require([
   highlightLayer.setRenderer( new SimpleRenderer(symbol) );
 
   ptsLayer.on('update-end', function() {
+    //now that we have gotten all of the features, switch to snapshot mode, so we don't attempt to download or server query for more.
+    ptsLayer._isSnapshot = true;
+    ptsLayer.mode = FeatureLayer.MODE_SNAPSHOT;
+    map.setLevel(12);
+    
     Underlay.hide();
     dom.byId('step1').hidden=true;
     dom.byId('step2').hidden=false;
     console.log("got all features");
     console.log("total feature count: " + ptsLayer.graphics.length);
-    //now that we have gotten all of the features, switch to snapshot mode, so we don't attempt to download or server query for more.
-    ptsLayer._isSnapshot = true;
-    ptsLayer.mode = FeatureLayer.MODE_SNAPSHOT;
     //ptsLayer.setDrawMode(true);
+    
     //enable map interaction
     //when the map is clicked create a buffer around the click point of the specified distance.
     var clickStart = map.on("click", function(evt) {
@@ -108,8 +111,7 @@ require([
       feature = features[i];
       if (circle.contains(feature.geometry)) {
         inBuffer.push(feature);
-        //test if this is a real feature or not (index returns feature json)
-        highlightLayer.add((feature.declaredClass) ? feature : new Graphic(feature));
+        highlightLayer.add(new Graphic(feature));
       }
     }
     /*console.log(inBuffer.length + " features in buffer");*/
