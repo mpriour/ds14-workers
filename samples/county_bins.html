@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Map and Layer</title>
+    <link rel="stylesheet" href="//jsdev.arcgis.com/3.9/js/esri/css/esri.css">
+    <style>
+      html, body, #map {
+        height: 100%;
+        margin: 0;
+      }
+      #info {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 10px;
+        background-color: #999;
+        font: 14px Segoe UI;
+        width: 200px;
+        text-align: center;
+        border-radius: 0 0 0 10px;
+      }
+    </style>
+    <script src="//jsdev.arcgis.com/3.9/"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="info">
+      <div style="font-size: 24px;">Stream Gauges Per <span id="areaType">County</span></div>
+      <div id="legend"></div>
+    </div>
+    <script src="county_bins.js"></script>
+</body>
+</html>
