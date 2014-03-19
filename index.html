@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Workers &amp; Indexing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Le styles -->
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+    body {
+    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+    }
+    pre{
+      font-size: 85%;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Workers &amp; Indexing</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="index.html">Home</a></li>
+              <li><a href="#docs">Docs</a></li>
+              <li><a href="#slides">Slides</a></li>
+              <li><a href="#samples">Samples</a></li>
+            </ul>
+            </div><!--/.nav-collapse -->
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div>
+          <h1>Workers &amp; Processors in esri JS API</h1>
+          <h3 class="muted"><em>Slides &amp; Samples presented at the esri 2014 DevSummit</em></h3>
+        </div>
+        <section id="docs">
+          <div class="page-header">
+            <h3 class="badge-inverse muted">WorkerClient, Processor, &amp; Spatial Indexing Docs</h3>
+          </div>
+          <div class="row">
+            <div class="span6">
+              <h3><a href="docs/index.html">Beta, provisional documentation</a></h3>
+              <p class="text-warning lead">Will be removed once offical docs are available at <a href="http://js.arcgis.com"> esri developer's center </a></p>
+            </div>
+          </div>
+        </section>
+        <section id="slides">
+          <div class="page-header">
+            <h3 class="badge-inverse muted">Slides</h3>
+          </div>
+          <div class="row">
+            <div class="span6">
+              <h3>Powerpoint Slide Deck</h3>
+              <a class="lead" href="slides/WorkersProcessorsDS14.pptx" download target="_blank">powerpoint</a>
+              <h3>HTML Slide Deck</h3>
+              <a class="lead" href="slides/index.html" target="_blank">html slides</a>
+            </div>
+          </div>
+        </section>
+        <section id="samples">
+          <div class="page-header">
+            <h3 class="badge-inverse muted">Samples</h3>
+          </div>
+          <div class="row">
+            <div class="span6">
+              <h3>Spatial Index plugin Samples</h3>
+              <p>A collection of samples showing the power of the spatial indexing plugin</p>
+            </div>
+          </div>
+          <ul><li>
+            <h3 id="ndx_basic">Simple r-tree index - map</h3>
+            <a class="lead" href="samples/rtree.html">rtree.html</a>
+            <p>
+            A simple example of an r-tree index added as a plugin to the map and used automatically in queryFeatures/selectFeatures
+            </p>
+          <p><a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/rtree.js">View the Source Code</a></p></li>
+          <li>
+            <h3 id="ndx_layer">Simple r-tree index - layer</h3>
+            <a class="lead" href="samples/rtree-layer.html">rtree-layer.html</a>
+            <p>
+            A simple example of an r-tree index added to and used on a specific layer
+            </p>
+          <p><a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/rtree-layer.html">View the Source Code</a></p></li>
+          
+          <li>
+            <h3 id="ndx_buffer">Advanced r-tree index</h3>
+            <a class="lead" href="samples/spyglass.html">spyglass.html</a>
+            <p>
+            A more advanced example; using an r-tree index on 50k points and constant querying using a circular buffer around the mouse point. Features are first bbox intersected and then specifically tested for inclusion in the circle.
+            </p>
+          <p><a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/spyglass.js">View the Source Code</a></p></li>
+          <li>
+            <h3 id="ndx_nearest">Advanced kd-tree index</h3>
+            <a class="lead" href="samples/spyglass_kd.html">spyglass_kd.html</a>
+            <p>
+            A more advanced example; using an nearest neighbor kd-tree index on 50k points and constant querying for the nearest 100 features.
+            </p>
+          <p><a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/spyglass_kd.js">View the Source Code</a></p></li>
+          <li>
+            <h3 id="ndx_binning">Creating a binned renderer using spatial indexing</h3>
+            <a class="lead" href="samples/county_bins.html">county_bins.html</a>
+            <p>
+            A fairly advanced example that uses the intersection of known geometries (US counties &amp; states) with another layer to create a binned view of the data (ie. on-the-fly chloropleth maps)
+            </p>
+          <p><a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/county_bins.js">View the Source Code</a></p></li>
+          <li>
+            <h3 id="ndx_heatmap">Creating a heatmap using spatial indexing and worker-based calculation</h3>
+            <a class="lead" href="samples/pts-heatmap.html">pts-heatmap.html</a>
+            <p>
+            A very advanced "proof of concept" example that uses the grid system underlying the OnDemandMode to request tiles of data from an idempotent calculation in a worker. The worker has direct access to the spatial index and simply requests areas of data from the index to perform calculation on. The worker calculates the relative weighted point density for each pixel. This process creates a mathematically based density surface. One could determine real-world point density values from the final image data, in contrast with heatmap.js which simply uses canvas blending tricks. There are some know limitations and bugs in this sample. It is simply a proof of concept that such calculations <em>could</em> be done and <b>not</b> a definitive source on how it should be done.
+            </p>
+            <p><u>View the Source Code</u></p>
+            <ul>
+              <li>main thread code :: <a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/pts-heatmap.js">pts-heatmap.js</a></li>
+              <li>interfacing worker :: <a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/heatmapWorker.js">heatmapWorker.js</a></li>
+              <li>density calculator :: <a href="//github.com/mpriour/ds14-workers/blob/gh-pages/samples/heatmapper.js">heatmapper.js</a></li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+      </div> <!-- /container -->
+      <!-- Le javascript
+      ================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    </body>
+  </html>
